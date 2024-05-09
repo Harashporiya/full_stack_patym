@@ -3,3 +3,10 @@
     width: 1200px;
     background-color: rgb(26, 197, 216);
 }
+#black {
+    background-color: rgb(0, 0, 0); 
+    z-index: 99;
+    top: 0;
+    opacity: 0.5; 
+  }
+  
