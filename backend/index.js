@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const money = require("./model/sendmoney")
 const moneysend = require("./route/sendmoney")
 const secretKey = "wertyuiolkjhgfdszxcvbnm";
-
+const sendUserId = require("./route/userSendMoney.js")
 
 connectMongoDb('mongodb://127.0.0.1:27017/paytem')
     .then(() => console.log("Mongodb Connected"))
@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json())
 app.use("/user", User);
 app.use("/sendmoney", moneysend);
-    
+app.use("/api", sendUserId)    
 
 
 app.get("/user/data", async (req, res) => {
