@@ -18,6 +18,7 @@ function Login() {
            email,
            password,
       })
+      localStorage.setItem('userId',response.data.loginUser._id)
       Cookies.set("authorization", response.data.token);
       setemail("");
       setpassword("");
