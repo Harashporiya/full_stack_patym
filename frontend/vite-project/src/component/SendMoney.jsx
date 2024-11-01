@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import axios from 'axios'
-import "./index.css"
-function SendMoney() {
-  const [cardNumber, setcardNumber] = useState();
-  const [amount, setAmount] = useState();
+import React, { useState } from 'react';
+
+const SendMoney = () => {
+  const [cardNumber, setCardNumber] = useState('');
+  const [amount, setAmount] = useState('');
+
   const handleSubmit = async(e)=>{
     e.preventDefault();
     try{
@@ -12,40 +12,60 @@ function SendMoney() {
        amount,
     })
     setAmount("");
-    setcardNumber("");
+    setCardNumber("");
     console.log(response.data);
     }catch(error){
       console.log("Error",error)
     }
   }
-  return (
-    <>
-    <div id='black'> </div>
-    <div  className='bg-sky-400 h-screen flex items-center'>
-      <div>
-      <img className='p-3 ' src='https://i.ytimg.com/vi/ssUHw771EcA/maxresdefault.jpg' alt=''/>
-      </div>
-      <div className='ml-9 border-4 border-sky-900 p-3   text-white font-semibold text-xl' >
-        <p className='flex justify-center'>Send Money</p>
-        
-        <p>UserNamae</p>
-        <form onSubmit={handleSubmit} className=''>
-          <div className='p-1'>
-          <input className='p-2 text-black text-xl  outline-none focus:border-2 focus:border-sky-800' value={cardNumber} onChange={(e)=>setcardNumber(e.target.value)} type='text' placeholder='card number'/>
-          </div>
-          <br/>
-          <div className='p-1'>
-          <input className='p-2 text-black  outline-none focus:border-2 focus:border-sky-800' type='text' placeholder='amount' value={amount} onChange={(e)=>setAmount(e.target.value)}/>
-          </div>
-          <button className='bg-sky-700 rounded-xl p-4 font-semibold text-2xl hover:bg-sky-900'>Send</button>
-        </form>
-       
-      </div>
-     
-    </div>
-   
-    </>
-  )
-}
 
-export default SendMoney
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-400 to-sky-600 flex justify-center items-center">
+      <div className="max-w-4xl w-full">
+        
+        <div className=" md:w-1/2 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg border-2 border-sky-700/20 p-6">
+          <h2 className="text-2xl font-bold text-center text-sky-900 mb-6">
+            Send Money
+          </h2>
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-sky-900">
+                Card Number
+              </label>
+              <input
+                type="text"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
+                placeholder="Enter card number"
+                className="w-full px-4 py-2 rounded-lg border border-sky-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none transition-all"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-sky-900">
+                Amount
+              </label>
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount"
+                className="w-full px-4 py-2 rounded-lg border border-sky-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 outline-none transition-all"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 ease-in-out"
+            >
+              Send Money
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SendMoney;
