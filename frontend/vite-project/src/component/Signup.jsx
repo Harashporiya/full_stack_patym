@@ -22,6 +22,8 @@ function Signup() {
         email,
         password,
       });
+      localStorage.setItem('userId',response.data.user._id)
+      // console.log("userId",response.data.user._id)
       Cookies.set("authorization", response.data.token);
       setfirstname("");
       setlastname("");
@@ -31,7 +33,7 @@ function Signup() {
         navigate("/home")
       },6000)
       toast.success(response.data.message, { position: "top-right" });
-      console.log(response.data);
+      // console.log(response.data);
     } catch (error) {
       console.log("Error", error);
     }
