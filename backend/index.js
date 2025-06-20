@@ -12,15 +12,31 @@ console.log(secretKey)
 
 const PORT = process.env.port | 5001;
 const url = process.env.MONGODB_URL
-console.log(url)
+
+const allowedOrigins = [process.env.FRONTEND_URL];
+
 connectMongoDb(url)
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.error("MongoDB Connection Error:", err));
 
 
-app.use(cors());
+
+
+
 app.use(express.json());
 
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error("Not allowed by CORS"));
+            }
+        },
+        credentials: true,
+    })
+);
 
 app.use("/user", userRoutes);
 app.use("/transaction", transactionRoutes);
