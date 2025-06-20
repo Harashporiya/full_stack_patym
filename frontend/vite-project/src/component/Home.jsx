@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { FaRupeeSign, FaSearch, FaUser } from "react-icons/fa";
+import { FiSend, FiSearch, FiUser, FiDollarSign, FiHome } from "react-icons/fi";
+import { RiWallet3Line } from "react-icons/ri";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
-const API_BASE_URL = "http://localhost:4444";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_API_URL;
 
 const Home = () => {
   const [users, setUsers] = useState([]);
-  const [userData, setUserData] = useState({});
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState({});
   const navigate = useNavigate();
 
   const userId = localStorage.getItem("userId");
@@ -20,9 +21,14 @@ const Home = () => {
     const fetchAllData = async () => {
       try {
         setIsLoading(true);
-        await Promise.all([fetchUsers(), fetchUserData()]);
+        const [usersRes, userRes] = await Promise.all([
+          axios.get(`${API_BASE_URL}user`),
+          axios.get(`${API_BASE_URL}user/${userId}`)
+        ]);
+        setUsers(usersRes.data);
+        setCurrentUser(userRes.data);
       } catch (error) {
-        setError("Failed to load data. Please try again.");
+        toast.error("Failed to load data. Please try again.");
         console.error("Error loading data:", error);
       } finally {
         setIsLoading(false);
@@ -30,49 +36,10 @@ const Home = () => {
     };
 
     fetchAllData();
-  }, []);
+  }, [userId]);
 
-  const fetchUsers = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/user/send/user`);
-      setUsers(response.data);
-    } catch (error) {
-      throw new Error("Failed to fetch users");
-    }
-  };
-
-  const fetchUserData = async () => {
-    try {
-      const token = Cookies.get("authorization");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      const response = await axios.get(`${API_BASE_URL}/user/data`, {
-        headers: { authorization: token }
-      });
-      setUserData(response.data);
-    } catch (error) {
-      navigate("/login");
-      throw new Error("Failed to fetch user data");
-    }
-  };
-
-  const handleTransaction = async (sentId) => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/send`, {
-        loginUserId: userId,
-        sentUserId: sentId
-      });
-       console.log(response.data)
-      if (response.data) {
-        navigate("/sendmoney");
-      }
-    } catch (error) {
-      console.error("Transaction error:", error);
-      alert("Failed to initiate transaction. Please try again.");
-    }
+  const handleTransaction = (id) => {
+    navigate(`/sendmoney/${id}`);
   };
 
   const filteredUsers = users.filter(
@@ -84,94 +51,121 @@ const Home = () => {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-300">
-        <div className="text-2xl font-semibold">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-gray-300">
-        <div className="text-2xl font-semibold text-red-600">{error}</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <div className="text-xl font-medium text-gray-700">Loading your dashboard...</div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-300">
-    
-      <header className="bg-sky-500 shadow-lg">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-white font-semibold text-4xl">Paytm</h1>
-          <div className="flex items-center gap-3">
-            <span className="text-3xl text-white font-semibold">Hello,</span>
-            <div className="border-2 border-white rounded-full px-4 py-2">
-              <span className="text-white font-semibold text-xl">
-                {userData.firstname || "User"}
-              </span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-blue-600 to-blue-500 shadow-md">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <RiWallet3Line className="text-white text-3xl" />
+              <h1 className="text-white text-2xl font-bold">PayWave</h1>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-2 bg-blue-700/30 px-4 py-2 rounded-full">
+                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                  <FiUser className="text-white" />
+                </div>
+                <span className="text-white font-medium">
+                  {currentUser.firstname || "User"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-    
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center gap-2 text-3xl font-semibold">
-          <span>Your balance:</span>
-          <FaRupeeSign className="mt-1" />
-          <span>5367</span>
-        </div>
-      </div>
-
-    
-      <div className="container mx-auto px-4">
-        <div className="flex items-center gap-4">
-          <h2 className="text-3xl font-semibold">Users:</h2>
-          <div className="relative flex-1 max-w-md">
-            <input
-              type="text"
-              placeholder="Search users..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 pr-10 text-xl rounded-lg border-2 border-gray-300 focus:border-sky-500 focus:outline-none"
-            />
-            <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      {/* Balance Card */}
+      <div className="container mx-auto px-4 mt-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-gray-500 text-sm font-medium">AVAILABLE BALANCE</h2>
+              <div className="flex items-center mt-2">
+                <FiDollarSign className="text-gray-700 text-xl mr-1" />
+                <span className="text-3xl font-bold text-gray-800">{currentUser.balance || '0.00'}</span>
+              </div>
+            </div>
+            <button 
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center"
+              onClick={() => navigate('/')}
+            >
+              <FiHome className="mr-2" />
+              Home
+            </button>
           </div>
         </div>
       </div>
 
-    
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredUsers.map((user) => (
-            <div
-              key={user._id}
-              className="bg-sky-500 rounded-xl shadow-lg overflow-hidden"
-            >
-              <div className="flex items-center p-4">
-                <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center">
-                  <FaUser className="text-4xl text-sky-500" />
-                </div>
-                <div className="ml-6 flex-1">
-                  <h3 className="text-2xl font-semibold text-white mb-4">
-                    {user.firstname} {user.lastname}
-                  </h3>
+      {/* Search and User List */}
+      <div className="container mx-auto px-4 mt-8">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Transfer Money</h2>
+          
+          {/* Search Bar */}
+          <div className="relative max-w-lg">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Users Grid */}
+        {filteredUsers.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            {filteredUsers.map((user) => (
+              <div key={user._id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="p-6">
+                  <div className="flex items-center">
+                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mr-4">
+                      <span className="text-blue-600 text-xl font-semibold">
+                        {user.firstname?.charAt(0)}{user.lastname?.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {user.firstname} {user.lastname}
+                      </h3>
+                      <p className="text-gray-500 text-sm">@{user.firstname?.toLowerCase()}</p>
+                    </div>
+                  </div>
                   <button
                     onClick={() => handleTransaction(user._id)}
-                    className="bg-black text-white px-6 py-2 rounded-full font-semibold text-xl hover:bg-gray-800 transition-colors"
+                    className="mt-6 w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-lg font-medium flex items-center justify-center transition-all"
                   >
+                    <FiSend className="mr-2" />
                     Send Money
                   </button>
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm p-8 text-center border border-gray-200">
+            <div className="text-gray-400 mb-4">
+              <FiSearch className="inline-block text-4xl" />
             </div>
-          ))}
-        </div>
-
-        {filteredUsers.length === 0 && (
-          <div className="text-center py-8 text-gray-600 text-xl">
-            No users found matching your search.
+            <h3 className="text-xl font-medium text-gray-700 mb-2">No users found</h3>
+            <p className="text-gray-500">
+              {search ? "Try a different search term" : "No users available to display"}
+            </p>
           </div>
         )}
       </div>
