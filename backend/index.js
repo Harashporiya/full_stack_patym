@@ -13,7 +13,7 @@ const secretKey = process.env.SECRET_KEY
 const PORT = process.env.port | 5001;
 const url = process.env.MONGODB_URL
 
-const allowedOrigins = [process.env.FRONTEND_URL || process.env.FRONTEND_DEPLOY_URL];
+const allowedOrigins = [process.env.FRONTEND_URL, process.env.FRONTEND_DEPLOY_URL];
 
 connectMongoDb(url)
     .then(() => console.log("MongoDB Connected"))
