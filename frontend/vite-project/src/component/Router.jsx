@@ -14,7 +14,7 @@ function Router() {
             <Route path='/signup' element={<Signup/>}/>
             <Route path='/login' element={<Login/>}/>
             <Route path='/home' element={<Home/>}/>
-            <Route path='/sendmoney' element={<SendMoney/>}/>
+            <Route path='/sendmoney/:id' element={<SendMoney/>}/>
         </Routes>
         </BrowserRouter>
       
