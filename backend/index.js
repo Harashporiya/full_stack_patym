@@ -8,19 +8,16 @@ const transactionRoutes = require("./route/transaction");
 const jwt = require("jsonwebtoken");
 const User = require("./model/user");
 const secretKey = process.env.SECRET_KEY
-console.log(secretKey)
+
 
 const PORT = process.env.port | 5001;
 const url = process.env.MONGODB_URL
 
-const allowedOrigins = [process.env.FRONTEND_URL];
+const allowedOrigins = [process.env.FRONTEND_URL || process.env.FRONTEND_DEPLOY_URL];
 
 connectMongoDb(url)
     .then(() => console.log("MongoDB Connected"))
     .catch(err => console.error("MongoDB Connection Error:", err));
-
-
-
 
 
 app.use(express.json());
