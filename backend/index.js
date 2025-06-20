@@ -1,44 +1,47 @@
-const express = require("express")
+const express = require("express");
 const app = express();
-const PORT = 4444;
+require("dotenv").config();
 const cors = require('cors');
-const { connectMongoDb } = require("./connect.js")
-const User = require("./route/user");
-const userData = require("./model/user");
+const { connectMongoDb } = require("./connect");
+const userRoutes = require("./route/user");
+const transactionRoutes = require("./route/transaction");
 const jwt = require("jsonwebtoken");
-const money = require("./model/sendmoney")
-const moneysend = require("./route/sendmoney")
-const secretKey = "wertyuiolkjhgfdszxcvbnm";
-const sendUserId = require("./route/userSendMoney.js")
+const User = require("./model/user");
+const secretKey = process.env.SECRET_KEY
+console.log(secretKey)
 
-connectMongoDb('mongodb://127.0.0.1:27017/paytem')
-    .then(() => console.log("Mongodb Connected"))
+const PORT = process.env.port | 5001;
+const url = process.env.MONGODB_URL
+console.log(url)
+connectMongoDb(url)
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.error("MongoDB Connection Error:", err));
 
-// app.get("/user", (req,res)=>{
-//     return res.send("Harash");
-// })
+
 app.use(cors());
-app.use(express.json())
-app.use("/user", User);
-app.use("/sendmoney", moneysend);
-app.use("/api", sendUserId)    
+app.use(express.json());
+
+
+app.use("/user", userRoutes);
+app.use("/transaction", transactionRoutes);
 
 
 app.get("/user/data", async (req, res) => {
     const token = req.headers.authorization;
-    // console.log(token)
     if (!token) {
-        return res.status(401).json({ error: "Unautorized" });
+        return res.status(401).json({ error: "Unauthorized" });
     }
     try {
         const decoded = jwt.verify(token, secretKey);
-        const { email, firstname, lastname } = await userData.findOne({ _id: decoded.userId });
-        // console.log(decoded)
-        res.json({ email: email, firstname: firstname, lastname:lastname })
+        const user = await User.findById(decoded.userId)
+                              .select('-password');
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        res.json(user);
     } catch (error) {
-        return res.status(401).json({ message: "Invalid token" })
+        return res.status(401).json({ message: "Invalid token" });
     }
-})
+});
 
-
-app.listen(PORT,()=>console.log(`Server Started at PORT: ${PORT}`))
+app.listen(PORT, () => console.log(`Server Started at PORT: ${PORT}`));
