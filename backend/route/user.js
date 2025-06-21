@@ -4,7 +4,7 @@ const User = require("../model/user");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const secretKey = process.env.SECRET_KEY
-
+const bcrypt = require("bcryptjs")
 
 router.post("/signup", async (req, res) => {
     const { firstname, lastname, email, password } = req.body;
@@ -15,11 +15,13 @@ router.post("/signup", async (req, res) => {
             return res.status(409).json({ message: "User already exists" });
         }
 
+        const hashPassword = await bcrypt.hash(password,10)
+
         const user = await User.create({
             firstname,
             lastname,
             email,
-            password, 
+            password: hashPassword, 
             balance: 1000 
         });
 
@@ -49,6 +51,11 @@ router.post("/login", async (req, res) => {
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
+        }
+
+        const comparePassword = await bcrypt.compare(password,user.password);
+        if(!comparePassword){
+           return res.json({success: false, message: 'passwords do not match'});
         }
 
         const token = jwt.sign({ userId: user._id }, secretKey, { expiresIn: "5d" });
